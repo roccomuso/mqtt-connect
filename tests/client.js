@@ -27,7 +27,6 @@ test('MQTTClient basic', function (t) {
     // should not receive msg on a different topic.
   app.use('/stayaway', function (client, msg, next) {
     t.fail('should not be reached! nobody publish in /stayaway')
-    next()
   })
     // should edit a given msg obj (+1).
   app.use('/compute', function (client, msg, next) {
@@ -89,6 +88,47 @@ test('MQTTClient API', function (t) {
   t.equal(app.getCount(), 0)
 })
 
+test('MQTTClient topic and wildcards', function (t) {
+  t.plan(6)
+
+  app.reset()
+  // '/' never reached
+  app.use('/', function (client, msg, next) {
+    t.fail(msg.topic, 'nobody published here')
+  })
+  // /hello/#
+  app.use('/deep/#', function (client, msg, next) {
+    t.equal(msg.topic, '/deep/hello/world', '# wildcard works')
+    next()
+  })
+  app.use('/deeper/#', function (client, msg, next) {
+    t.equal(msg.data, 'boo', '# got boo on /deep/hello/world/more/deeper')
+    next()
+  })
+  // /hello/+
+  app.use('/hello/+', function (client, msg, next) {
+    t.equal(msg.topic, '/hello/world', '+ wildcard works')
+    next()
+  })
+  app.use('/world/+', function (client, msg, next) {
+    t.equal(msg.data, 'ok', '+ wildcard works')
+    next()
+  })
+
+  t.equal(app.getCount(), 5) // +1
+
+  setTimeout(function () {
+    client.emit('message', '/deep/hello/world', 'boo') // +1
+    client.emit('message', '/deeper/hello/world/more/more/more', 'boo') // +1
+    client.emit('message', '/hello/world', 'foo') // +1
+    client.emit('message', '/hello', 'sorry') // no catch
+    client.emit('message', '/world/catched', 'ok') // +1
+    client.emit('message', '/world/catched', 'ok') // +1
+    client.emit('message', '/world/no/catched', 'no') // no catch
+  }, 1000)
+
+})
+
 /*
 
 test('MQTTClient middlewares order', function (t) {
@@ -97,17 +137,6 @@ test('MQTTClient middlewares order', function (t) {
     // Istantiate 24 middlewars
     // Order counts: every middleware adds a progressive letter.
     // expect final string
-
-})
-
-test('MQTTClient topic and wildcards', function (t) {
-    t.plan(3)
-
-    // / never reached
-
-    // /hello/#
-
-    // /hello/+
 
 })
 
