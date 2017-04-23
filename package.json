@@ -1,6 +1,6 @@
 {
   "name": "mqtt-connect",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MQTT high level framework to glue together various middleware to handle incoming messages",
   "main": "index.js",
   "scripts": {
