@@ -108,7 +108,7 @@ app.use(function(broker, client, packet, next){
 })
 ```
 
-### app.use(route, fn)
+### app.use(topic, fn)
 
 Use a function on the app, where the function represents a middleware. The function
 will be invoked for every packet received in which the TOPIC match with
@@ -124,7 +124,7 @@ app.use('/foo', function (client, msg, next) {
 app.use('/bar/+', brokerCb)
 ```
 
-The `route` could be terminated with a path separator (`/`) or an MQTT wildcard character (`+` or `#`).
+The `topic` could be terminated with a path separator (`/`) or an MQTT wildcard character (`+` or `#`).
 This means the given topic `/foo/` and `/foo` are NOT the same and both will not match the same messages.
 
 Moreover the `topic` is matched in a case-sensitive manor!
