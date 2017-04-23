@@ -126,18 +126,33 @@ test('MQTTClient topic and wildcards', function (t) {
     client.emit('message', '/world/catched', 'ok') // +1
     client.emit('message', '/world/no/catched', 'no') // no catch
   }, 1000)
-
 })
-
-/*
 
 test('MQTTClient middlewares order', function (t) {
-    t.plan(3)
+  t.plan(2)
 
-    // Istantiate 24 middlewars
+  app.reset()
+
     // Order counts: every middleware adds a progressive letter.
-    // expect final string
+  for (var i = 66; i < 123; i++) {
+    (function (i) {
+      app.use('#', function (client, msg, next) {
+        msg.data = (typeof msg.data === 'string' ? msg.data : '') + String.fromCharCode(i)
+        next()
+      })
+    })(i)
+  }
+    // last middleware
+  app.use(function (client, msg, next) {
+    console.log('got final string:', msg.data)
+      // expect final string
+    t.equal(msg.data, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz', 'Final string built by middlewares match')
+    next()
+  })
 
+  t.equal(app.getCount(), 58, 'Got 58 middlewares instantiated')
+
+  setTimeout(function () {
+    client.emit('message', 'helloTopic', 'A')
+  }, 1000)
 })
-
-*/
